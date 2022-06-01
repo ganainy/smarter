@@ -1,12 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/providers/settings.dart';
+import 'package:smarter/providers/home_provider.dart';
+import 'package:smarter/providers/settings_provider.dart';
 
 class NavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var settingsProvider = Provider.of<SettingsProvider>(context);
+    var homeProvider = Provider.of<HomeProvider>(context);
 
     return Drawer(
       child: ListView(
@@ -17,7 +19,6 @@ class NavBar extends StatelessWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.brightness_2_rounded),
             title: Text('Dark Mode'.tr()),
             trailing: Switch(
               value: settingsProvider.isDarkMode,
@@ -27,9 +28,8 @@ class NavBar extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.language),
             title: ExpansionTile(
-              title: Text('Language'.tr()),
+              title: Text('App language'.tr()),
               children: <Widget>[
                 ListTile(
                     title: Text('English'.tr()),
@@ -41,6 +41,25 @@ class NavBar extends StatelessWidget {
                     title: Text('German'.tr()),
                     onTap: () {
                       settingsProvider.changeLocale(Languages.de);
+                      Navigator.of(context).pop();
+                    }),
+              ],
+            ),
+          ),
+          ListTile(
+            title: ExpansionTile(
+              title: Text('Top podcasts language'.tr()),
+              children: <Widget>[
+                ListTile(
+                    title: Text('English'.tr()),
+                    onTap: () {
+                      homeProvider.changeTopPodcastsLanguage(Languages.en);
+                      Navigator.of(context).pop();
+                    }),
+                ListTile(
+                    title: Text('German'.tr()),
+                    onTap: () {
+                      homeProvider.changeTopPodcastsLanguage(Languages.de);
                       Navigator.of(context).pop();
                     }),
               ],

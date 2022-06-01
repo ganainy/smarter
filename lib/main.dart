@@ -1,15 +1,31 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive/hive.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter/customization/theme.dart';
-import 'package:smarter/providers/settings.dart';
-
-import 'nav_bar.dart';
+import 'package:smarter/providers/audio_provider.dart';
+import 'package:smarter/providers/home_provider.dart';
+import 'package:smarter/providers/podcast_provider.dart';
+import 'package:smarter/providers/settings_provider.dart';
+import 'package:smarter/screens/home/home.dart';
+import 'package:smarter/services/database/subscriptions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
+  //Hive db
+  final appDocumentDirectory = await getApplicationDocumentsDirectory();
+  final database = Directory('${appDocumentDirectory.path}/database');
+  Hive.init(database.path);
+  Hive.registerAdapter(SubscriptionAdapter());
+  await Hive.openBox('subscriptionsBox');
+  await Hive.openBox('generalBox');
+  await Hive.openBox('historyBox');
 
   runApp(
     EasyLocalization(
@@ -37,6 +53,15 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(
               create: (_) => SettingsProvider(),
             ),
+            ChangeNotifierProvider(
+              create: (_) => HomeProvider(),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => PodcastProvider(),
+            ),
+            ChangeNotifierProvider(
+              create: (_) => AudioProvider(0),
+            ),
           ],
           child: Consumer<SettingsProvider>(
             builder: (context, provider, child) {
@@ -49,7 +74,7 @@ class MyApp extends StatelessWidget {
                 localizationsDelegates: context.localizationDelegates,
                 supportedLocales: context.supportedLocales,
                 locale: context.locale,
-                home: const MyHomePage(),
+                home: HomeScreen(),
                 routes: {
                   //ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
                 },
@@ -58,39 +83,6 @@ class MyApp extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    var settingsProvider = Provider.of<SettingsProvider>(context);
-
-    switch (settingsProvider.language) {
-      case Languages.en:
-        context.setLocale(const Locale('en', 'US'));
-        break;
-      case Languages.de:
-        context.setLocale(const Locale('de', 'DE'));
-        break;
-      default:
-        break;
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Test'.tr()),
-      ),
-      drawer: NavBar(),
-      body: Center(),
     );
   }
 }
