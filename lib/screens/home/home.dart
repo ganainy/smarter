@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:podcast_search/src/model/item.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter/providers/home_provider.dart';
 
@@ -29,11 +30,7 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       drawer: NavBar(),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [TopPodcasts(context: context)],
-          ),
-        ),
+        child: TopPodcasts(context: context),
       ),
     );
   }
@@ -117,54 +114,66 @@ class TopPodcasts extends StatelessWidget {
                           ),
                         ],
                       )
-                    : Wrap(
-                        children: _topPodcasts.map((_item) {
-                        return Padding(
-                          padding: const EdgeInsets.only(
-                              top: 4.0, bottom: 4.0, left: 2.0, right: 2.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                PageRouteBuilder(
-                                  transitionDuration:
-                                      const Duration(milliseconds: 500),
-                                  transitionsBuilder: (context, animation,
-                                      secondaryAnimation, child) {
-                                    const begin = Offset(1.0, 0.0);
-                                    const end = Offset.zero;
-                                    const curve = Curves.ease;
-
-                                    final tween = Tween(begin: begin, end: end);
-                                    final curvedAnimation = CurvedAnimation(
-                                      parent: animation,
-                                      curve: curve,
-                                    );
-
-                                    return SlideTransition(
-                                      position: tween.animate(curvedAnimation),
-                                      child: child,
-                                    );
-                                  },
-                                  pageBuilder: (_, __, ___) => PodcastScreen(
-                                    podcastInfo: _item,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Hero(
-                              tag: 'logo${_item.collectionId}',
-                              child: PodcastDisplayWidget(
-                                name: _item.collectionName ?? 'N/A',
-                                posterUrl: _item.bestArtworkUrl ?? '',
-                                context: context,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList());
+                    : buildTopPodcastsList(_topPodcasts, context);
           }),
         ],
       ),
     );
+  }
+
+  Widget buildTopPodcastsList(List<Item> _topPodcasts, BuildContext context) {
+    //return SizedBox();
+
+    return Expanded(
+        child: GridView.count(
+      shrinkWrap: true,
+      childAspectRatio: 1 / 1.3,
+      children: [
+        ..._topPodcasts.map((podcast) {
+          return Padding(
+            padding: const EdgeInsets.only(
+                top: 4.0, bottom: 4.0, left: 2.0, right: 2.0),
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).push(
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.ease;
+
+                      final tween = Tween(begin: begin, end: end);
+                      final curvedAnimation = CurvedAnimation(
+                        parent: animation,
+                        curve: curve,
+                      );
+
+                      return SlideTransition(
+                        position: tween.animate(curvedAnimation),
+                        child: child,
+                      );
+                    },
+                    pageBuilder: (_, __, ___) => PodcastScreen(
+                      podcastInfo: podcast,
+                    ),
+                  ),
+                );
+              },
+              child: Hero(
+                tag: 'logo${podcast.collectionId}',
+                child: PodcastDisplayWidget(
+                  name: podcast.collectionName ?? 'N/A',
+                  posterUrl: podcast.bestArtworkUrl ?? '',
+                  context: context,
+                ),
+              ),
+            ),
+          );
+        })
+      ].toList(),
+      crossAxisCount: 3,
+    ));
   }
 }

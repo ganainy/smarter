@@ -47,14 +47,12 @@ class AudioProvider with ChangeNotifier {
     //get total duration of playback
     notifyListeners();
     _audioPlayer.durationStream.listen((event) {
-      print('durationStream ${event?.inSeconds}');
       playbackDuration = event?.inSeconds;
       notifyListeners();
     });
     //listen to position to show progess of playback
 
     _audioPlayer.positionStream.listen((event) {
-      print('positionStream ${event.inSeconds}');
       playbackPosition = event.inSeconds;
       notifyListeners();
     });
@@ -67,6 +65,7 @@ class AudioProvider with ChangeNotifier {
 
       if (newSong.url != currentSongUrl) {
         currentSongUrl = newSong.url;
+        notifyListeners();
         initAudio();
         _audioPlayer.play();
         return;

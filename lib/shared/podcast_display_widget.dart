@@ -62,6 +62,8 @@ class _PodcastDisplayWidgetState extends State<PodcastDisplayWidget> {
             child: Text(
               widget.name,
               textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 fontSize: 13.0,
                 fontWeight: FontWeight.w400,

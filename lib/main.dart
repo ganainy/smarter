@@ -13,6 +13,7 @@ import 'package:smarter/providers/podcast_provider.dart';
 import 'package:smarter/providers/settings_provider.dart';
 import 'package:smarter/screens/home/home.dart';
 import 'package:smarter/services/database/subscriptions.dart';
+import 'package:smarter/shared/mini_player.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,16 @@ class MyApp extends StatelessWidget {
                 supportedLocales: context.supportedLocales,
                 locale: context.locale,
                 home: HomeScreen(),
+                builder: (context, child) {
+                  //to show the mini player over the whole app
+                  return Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      child!,
+                      SizedBox(height: 110, child: MiniPlayer()),
+                    ],
+                  );
+                },
                 routes: {
                   //ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
                 },

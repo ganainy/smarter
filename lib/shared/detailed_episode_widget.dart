@@ -44,7 +44,7 @@ class _DetailedEpsiodeViewWidgetState extends State<DetailedEpsiodeViewWidget> {
                         ? "Episode ${widget.episode.episode}"
                         : '',
                 style: const TextStyle(
-                  fontSize: 12.0,
+                  fontSize: 10.0,
                   fontWeight: FontWeight.w800,
                 ),
               ),

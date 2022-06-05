@@ -12,7 +12,6 @@ import 'package:smarter/shared/shimmer_widget.dart';
 import '../../providers/podcast_provider.dart';
 import '../../shared/detailed_episode_loading_widget.dart';
 import '../../shared/detailed_episode_widget.dart';
-import '../../shared/mini_player.dart';
 
 class PodcastScreen extends StatefulWidget {
   final Item podcastInfo;
@@ -48,8 +47,6 @@ class _PodcastScreenState extends State<PodcastScreen> {
                 podcastProvider.isLoading
                     ? buildEpisodesListLoading()
                     : buildEpisodesList(podcastProvider),
-                const Align(
-                    alignment: Alignment.bottomCenter, child: MiniPlayer()),
               ],
             );
           },

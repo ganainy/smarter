@@ -3,12 +3,6 @@ import 'package:feather_icons/feather_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter/providers/audio_provider.dart';
-// import 'package:intl/intl.dart';
-
-const double _smallPlayerSize = 80.0;
-const double _largePlayerSize = 380.0;
-
-// Mini Player widget.  ( Having two states, one for small, one for large players);
 
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({Key? key}) : super(key: key);
@@ -18,41 +12,26 @@ class MiniPlayer extends StatefulWidget {
 }
 
 class _MiniPlayerState extends State<MiniPlayer> {
-  // _height variable sets the height of the player.
-
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Consumer(
-        builder: (context, AudioProvider audioProvider, child) {
-          return audioProvider.currentSongUrl == null
-              ? Container(
-                  height: 0,
-                  width: MediaQuery.of(context).size.width,
-                  color: Colors.red.withOpacity(0.2),
-                )
-              : AnimatedContainer(
-                  // height: _height,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topRight: const Radius.circular(16.0),
-                      topLeft: Radius.circular(16.0),
-                    ),
-                  ),
-                  duration: const Duration(milliseconds: 200),
-                  child: Material(
-                    color: Theme.of(context).highlightColor.withOpacity(0.3),
-                    child: buildSmallPlayer(audioProvider),
-                  ));
-        },
-      ),
+    return Consumer(
+      builder: (context, AudioProvider audioProvider, child) {
+        print('mini player consumer called ${audioProvider.currentSongUrl}');
+        return audioProvider.currentSongUrl == null
+            ? const SizedBox()
+            : AnimatedContainer(
+                // height: _height,
+                duration: const Duration(milliseconds: 200),
+                child: Material(
+                  child: buildSmallPlayer(audioProvider),
+                ));
+      },
     );
   }
 
   Widget buildSmallPlayer(AudioProvider audioProvider) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
@@ -140,24 +119,19 @@ class _MiniPlayerState extends State<MiniPlayer> {
             )
           ],
         ),
-        const SizedBox(
-          height: 2.0,
-        ),
         Container(
           width: MediaQuery.of(context).size.width * 0.9,
+          height: 35,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10.0),
           ),
           clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width * 0.9,
-            child: ProgressBar(
-              progress: Duration(seconds: audioProvider.playbackPosition),
-              total: Duration(seconds: audioProvider.playbackDuration ??= 1),
-              onSeek: (duration) {
-                audioProvider.seek(duration.inSeconds);
-              },
-            ),
+          child: ProgressBar(
+            progress: Duration(seconds: audioProvider.playbackPosition),
+            total: Duration(seconds: audioProvider.playbackDuration ??= 1),
+            onSeek: (duration) {
+              audioProvider.seek(duration.inSeconds);
+            },
           ),
         ),
         const SizedBox(
