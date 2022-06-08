@@ -1,58 +1,60 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:podcast_search/podcast_search.dart';
 
 import '../services/database/db_service.dart';
+import '../services/playlist_repository.dart';
+import '../services/service_locator.dart';
 
+//todo sort,lang, add firebase
 enum EpisodeSort { newToOld, oldToNew }
 
 class PodcastProvider with ChangeNotifier {
-  PodcastProvider() {
-    //loadPodcastEpisodes(podcastInfo?.feedUrl ?? '');
-  }
+  final playListRepository = getIt.get<PlaylistRepository>();
 
-  Item? podcastInfo;
-  List<Episode> filteredEpisodes = [];
-  List<Episode> _episodes = [];
+  List<Episode> filteredEpisodes = []; //list of episodes after search
+  List<Episode> _allEpisodes = []; //list of all episodes
+  Podcast? podcast; //list of all episodes
+
   bool isLoading = false;
-  bool isSubscribed = false;
-  String? description;
+  bool isSubscribedToPodcast = false;
   EpisodeSort episodesSort = EpisodeSort.newToOld;
 
-  Future<void> loadPodcastEpisodes(String feedUrl) async {
+  loadPodcastEpisodes(String feedUrl, BuildContext context) async {
     isLoading = true;
     notifyListeners();
-    bool _isSubbed = await isPodcastSubbed(podcastInfo);
-    Podcast _podcast;
-    try {
-      print("loadPodcastEpisodes feed url : $feedUrl");
-      _podcast = await Podcast.loadFeed(url: feedUrl);
+
+    playListRepository.loadPodcast(feedUrl).then((_podcast) {
+      if (_podcast == null) {
+        //error loading
+        print(" error in getting pod eps");
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      podcast = _podcast;
 
       if (_podcast.episodes != null) {
-        _episodes.clear();
+        List<Episode> _episodes = [];
         for (var i in _podcast.episodes!) {
           _episodes.add(i);
         }
+        _allEpisodes = _episodes;
         filteredEpisodes = _episodes;
       }
-      description = _podcast.description;
       isLoading = false;
-      isSubscribed = _isSubbed;
       notifyListeners();
-    } on PodcastFailedException catch (e) {
-      print(" error in getting pod eps: ${e.toString()}");
-      isLoading = false;
-      isSubscribed = _isSubbed;
-      notifyListeners();
-    }
+    });
   }
 
   removeFromSubscriptionsAction(Item podcast) async {
     bool _removed = await removePodcastFromSubs(podcast);
     if (_removed) {
       print(" podcast ${podcast.collectionName}  is removed from subs");
-      isSubscribed = false;
+      isSubscribedToPodcast = false;
     } else {
-      isSubscribed = true;
+      isSubscribedToPodcast = true;
     }
     notifyListeners();
   }
@@ -64,20 +66,20 @@ class PodcastProvider with ChangeNotifier {
     if (_saved) {
       print(" podcast ${podcast.collectionName}  is saved to subs");
       isLoading = false;
-      isSubscribed = true;
+      isSubscribedToPodcast = true;
       notifyListeners();
     } else {
       isLoading = false;
-      isSubscribed = false;
+      isSubscribedToPodcast = false;
       notifyListeners();
     }
   }
 
   void filterEpisodesWithQuery(String query) {
     if (query.isEmpty) {
-      filteredEpisodes = _episodes;
+      filteredEpisodes = _allEpisodes;
     } else {
-      filteredEpisodes = _episodes
+      filteredEpisodes = _allEpisodes
           .where((episode) =>
               episode.title.toLowerCase().contains(query.toLowerCase().trim()))
           .toList();
@@ -90,9 +92,8 @@ class PodcastProvider with ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      _episodes
+      filteredEpisodes
           .sort((a, b) => a.publicationDate!.compareTo(b.publicationDate!));
-      filteredEpisodes = _episodes;
 
       //epSortingIncr: !state.epSortingIncr,
 
@@ -102,5 +103,10 @@ class PodcastProvider with ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  loadSubscriptionState(Item podcastInfo) async {
+    isSubscribedToPodcast = await isPodcastSubbed(podcastInfo);
+    notifyListeners();
   }
 }

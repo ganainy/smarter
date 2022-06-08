@@ -1,117 +1,179 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:podcast_search/podcast_search.dart';
+import 'package:provider/provider.dart';
+import 'package:smarter/providers/podcast_provider.dart';
 
-import '../models/song.dart';
+import '../services/audio_handler.dart';
+import '../services/service_locator.dart';
 
-enum PlayState { initial, loading, playing, paused }
+class ProgressBarState {
+  ProgressBarState(this.current, this.buffered, this.total);
+
+  Duration? current;
+  Duration? buffered;
+  Duration? total;
+}
+
+enum ButtonState {
+  paused,
+  playing,
+  loading,
+}
 
 class AudioProvider with ChangeNotifier {
-  var _audioPlayer = AudioPlayer();
-  PlayState playState = PlayState.initial;
-  String? currentSongUrl;
-  Song? song;
-  int playbackPosition = 0;
-  int? playbackDuration;
+  MediaItem? currentMediaItem;
+  List<String> playlistNotifier = [];
+  ProgressBarState? progressNotifier;
+  bool isFirstSongNotifier = true;
+  ButtonState playButtonNotifier = ButtonState.paused;
+  bool isLastSongNotifier = true;
+  final MyAudioHandler _audioHandler =
+      (getIt.get<AudioHandler>() as MyAudioHandler);
 
-  int id; //to differ between different providers
-  AudioProvider(this.id);
+  void init() {
+    _listenToChangesInPlaylist();
+    _listenToPlaybackState();
+    _listenToCurrentPosition();
+    _listenToBufferedPosition();
+    _listenToTotalDuration();
+    _listenToChangesInSong();
+  }
 
-  initAudio() {
-    print("initAudio()");
+  Future<void> loadPlaylist(List<Episode> playlist) async {
+    final mediaItems = playlist
+        .map((song) => MediaItem(
+              id: song.guid ?? '',
+              title: song.title ?? '',
+              artUri: Uri.parse(song.imageUrl ?? ''),
+              extras: {'url': song.contentUrl},
+            ))
+        .toList();
+    _audioHandler.addQueueItems(mediaItems);
+  }
 
-    _audioPlayer
-        .setAudioSource(ConcatenatingAudioSource(children: [
-      AudioSource.uri(Uri.parse(currentSongUrl!)),
-    ]))
-        .catchError((error) {
-      // catch load errors: 404, invalid url ...
-      print("An error occured $error");
-    });
-
-    //change ui based on play state
-    _audioPlayer.playerStateStream.listen((playerState) {
-      var processingState = playerState.processingState;
-      if (processingState == ProcessingState.loading ||
-          processingState == ProcessingState.buffering) {
-        playState = PlayState.loading;
-      } else if (_audioPlayer.playing != true) {
-        playState = PlayState.paused;
-      } else if (processingState != ProcessingState.completed) {
-        playState = PlayState.playing;
+  void _listenToChangesInPlaylist() {
+    _audioHandler.queue.listen((playlist) {
+      if (playlist.isEmpty) {
+        playlistNotifier = [];
+        currentMediaItem = null;
       } else {
-        playState = PlayState.paused;
+        final newList = playlist.map((item) => item.title).toList();
+        playlistNotifier = newList;
       }
-      notifyListeners();
-    });
-
-    //get total duration of playback
-    notifyListeners();
-    _audioPlayer.durationStream.listen((event) {
-      playbackDuration = event?.inSeconds;
-      notifyListeners();
-    });
-    //listen to position to show progess of playback
-
-    _audioPlayer.positionStream.listen((event) {
-      playbackPosition = event.inSeconds;
+      _updateSkipButtons();
       notifyListeners();
     });
   }
 
-  void playPauseAudio({Song? newSong}) {
-    //if the playing song is different than the new song, then play the new song from beginning
-    if (newSong != null) {
-      song = newSong;
-
-      if (newSong.url != currentSongUrl) {
-        currentSongUrl = newSong.url;
-        notifyListeners();
-        initAudio();
-        _audioPlayer.play();
-        return;
+  void _listenToPlaybackState() {
+    _audioHandler.playbackState.listen((playbackState) {
+      final isPlaying = playbackState.playing;
+      print('_listenToPlaybackState ${playbackState.processingState}');
+      final processingState = playbackState.processingState;
+      if (processingState == AudioProcessingState.loading ||
+          processingState == AudioProcessingState.buffering) {
+        playButtonNotifier = ButtonState.loading;
+      } else if (!isPlaying) {
+        playButtonNotifier = ButtonState.paused;
+      } else if (processingState != AudioProcessingState.completed) {
+        playButtonNotifier = ButtonState.playing;
+      } else {
+        _audioHandler.seek(Duration.zero);
+        _audioHandler.pause();
       }
-    }
-    //otherwise change the state of the current song
+      notifyListeners();
+    });
+  }
 
-    var processingState = _audioPlayer.playerState.processingState;
-    if (processingState == ProcessingState.loading ||
-        processingState == ProcessingState.buffering) {
-      //temporary state (loading,buffering)
-    } else if (_audioPlayer.playing != true) {
-      // paused or not started yet , call _audioPlayer.play
-      _audioPlayer.play();
-    } else if (processingState != ProcessingState.completed) {
-      // player is playing music , call _audioPlayer.pause
-      _audioPlayer.pause();
+  void _listenToCurrentPosition() {
+    AudioService.position.listen((position) {
+      final oldState = progressNotifier;
+      progressNotifier = ProgressBarState(
+        position,
+        oldState?.buffered,
+        oldState?.total,
+      );
+      notifyListeners();
+    });
+  }
+
+  void _listenToBufferedPosition() {
+    _audioHandler.playbackState.listen((playbackState) {
+      final oldState = progressNotifier;
+      progressNotifier = ProgressBarState(
+        oldState?.current,
+        playbackState.bufferedPosition,
+        oldState?.total,
+      );
+      notifyListeners();
+    });
+  }
+
+  void _listenToTotalDuration() {
+    _audioHandler.mediaItem.listen((mediaItem) {
+      final oldState = progressNotifier;
+      progressNotifier = ProgressBarState(
+        oldState?.current,
+        oldState?.buffered,
+        mediaItem?.duration ?? Duration.zero,
+      );
+      notifyListeners();
+    });
+  }
+
+  void _listenToChangesInSong() {
+    _audioHandler.mediaItem.listen((mediaItem) {
+      currentMediaItem = mediaItem;
+      _updateSkipButtons();
+      notifyListeners();
+    });
+  }
+
+  void _updateSkipButtons() {
+    final mediaItem = _audioHandler.mediaItem.value;
+    final playlist = _audioHandler.queue.value;
+    if (playlist.length < 2 || mediaItem == null) {
+      isFirstSongNotifier = true;
+      isLastSongNotifier = true;
     } else {
-      // all music list ended, play again from the start
-      // _audioPlayer.seek(Duration.zero,index: _audioPlayer.effectiveIndices.first)
-      _audioPlayer.seek(Duration.zero,
-          index: _audioPlayer.effectiveIndices?.first);
+      isFirstSongNotifier = playlist.first == mediaItem;
+      isLastSongNotifier = playlist.last == mediaItem;
     }
+    notifyListeners();
   }
 
-  void rewindTenSeconds() {
-    _audioPlayer.seek(Duration(seconds: playbackPosition - 10));
+  var podcastName;
+  void play(BuildContext context, int listIndex) async {
+    var podcastProvider = Provider.of<PodcastProvider>(context, listen: false);
+
+    //only load each podcast playlist only once
+    if (podcastProvider.podcast?.title != podcastName) {
+      print('playlist is loaded again in player');
+      var audioProvider = Provider.of<AudioProvider>(context, listen: false);
+      audioProvider.loadPlaylist(podcastProvider.filteredEpisodes);
+      podcastName = podcastProvider.podcast?.title;
+    }
+
+    await _audioHandler.skipToQueueItem(listIndex);
+
+    _audioHandler.play();
   }
 
-  void seek(int seconds) {
-    _audioPlayer.seek(Duration(seconds: seconds));
+  void resume() => _audioHandler.play();
+
+  void pause() => _audioHandler.pause();
+
+  void seek(Duration position) => _audioHandler.seek(position);
+
+  void previous() => _audioHandler.skipToPrevious();
+  void next() => _audioHandler.skipToNext();
+
+  void dispose() {
+    _audioHandler.customAction('dispose');
   }
 
-  void stopPlayback() {
-    _audioPlayer.stop();
-  }
-
-  void pausePlayback() {
-    _audioPlayer.pause();
-  }
-
-  void fastForwardTenSeconds() {
-    _audioPlayer.seek(Duration(seconds: playbackPosition + 10));
-  }
-
-  void resumePlayback() {
-    _audioPlayer.play();
+  void stop() {
+    _audioHandler.stop();
   }
 }

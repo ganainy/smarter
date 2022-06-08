@@ -13,11 +13,13 @@ class MiniPlayer extends StatefulWidget {
 
 class _MiniPlayerState extends State<MiniPlayer> {
   @override
+  void initState() {}
+
+  @override
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, AudioProvider audioProvider, child) {
-        print('mini player consumer called ${audioProvider.currentSongUrl}');
-        return audioProvider.currentSongUrl == null
+        return audioProvider.playlistNotifier.isEmpty
             ? const SizedBox()
             : AnimatedContainer(
                 // height: _height,
@@ -53,7 +55,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14.0)),
                       child: Image.network(
-                        audioProvider.song?.icon ?? '',
+                        audioProvider.currentMediaItem?.artUri.toString() ?? '',
                       ),
                     ),
                   )),
@@ -62,7 +64,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10.0),
                       child: Text(
-                        audioProvider.song?.name ?? "  ",
+                        audioProvider.currentMediaItem?.title ?? "  ",
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -86,22 +88,17 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         size: 32.0,
                       ),
                       onPressed: () {
-                        audioProvider.rewindTenSeconds();
+                        audioProvider.seek(const Duration(seconds: -10));
                       }),
                   Container(
                     child: Row(
                       children: [
-                        IconButton(
-                            icon: Icon(
-                              audioProvider.playState == PlayState.playing
-                                  ? FeatherIcons.pauseCircle
-                                  : FeatherIcons.playCircle,
-                              color: Theme.of(context).colorScheme.secondary,
-                              size: 32.0,
-                            ),
-                            onPressed: () {
-                              audioProvider.playPauseAudio();
-                            }),
+                        audioProvider.playButtonNotifier == ButtonState.playing
+                            ? buildPlayingButton(audioProvider)
+                            : audioProvider.playButtonNotifier ==
+                                    ButtonState.loading
+                                ? buildLoadingButton()
+                                : buildPausedButton(audioProvider),
                       ],
                     ),
                   ),
@@ -112,7 +109,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                         size: 32.0,
                       ),
                       onPressed: () {
-                        audioProvider.fastForwardTenSeconds();
+                        audioProvider.seek(const Duration(seconds: 10));
                       }),
                 ],
               ),
@@ -127,10 +124,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
           ),
           clipBehavior: Clip.antiAlias,
           child: ProgressBar(
-            progress: Duration(seconds: audioProvider.playbackPosition),
-            total: Duration(seconds: audioProvider.playbackDuration ??= 1),
+            progress: audioProvider.progressNotifier?.current ??
+                const Duration(seconds: 0),
+            buffered: audioProvider.progressNotifier?.buffered ??
+                const Duration(seconds: 0),
+            total: audioProvider.progressNotifier?.total ??
+                const Duration(seconds: 0),
             onSeek: (duration) {
-              audioProvider.seek(duration.inSeconds);
+              audioProvider.seek(duration);
             },
           ),
         ),
@@ -139,6 +140,35 @@ class _MiniPlayerState extends State<MiniPlayer> {
         ),
       ],
     );
+  }
+
+  buildPlayingButton(AudioProvider audioProvider) {
+    return IconButton(
+        icon: Icon(
+          FeatherIcons.pauseCircle,
+          color: Theme.of(context).colorScheme.secondary,
+          size: 32.0,
+        ),
+        onPressed: () {
+          audioProvider.pause();
+        });
+  }
+
+  buildPausedButton(AudioProvider audioProvider) {
+    return IconButton(
+        icon: Icon(
+          FeatherIcons.playCircle,
+          color: Theme.of(context).colorScheme.secondary,
+          size: 32.0,
+        ),
+        onPressed: () {
+          audioProvider.resume();
+        });
+  }
+
+  buildLoadingButton() {
+    return const SizedBox(
+        width: 32, height: 32, child: CircularProgressIndicator());
   }
 }
 

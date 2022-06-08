@@ -52,6 +52,7 @@ dependencies:
   audio_service: ^0.18.4
   shimmer: ^2.0.0
   audio_video_progress_bar: ^0.10.0
+  get_it: ^7.2.0
 
 dev_dependencies:
   flutter_test:

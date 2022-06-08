@@ -13,6 +13,7 @@ import 'package:smarter/providers/podcast_provider.dart';
 import 'package:smarter/providers/settings_provider.dart';
 import 'package:smarter/screens/home/home.dart';
 import 'package:smarter/services/database/subscriptions.dart';
+import 'package:smarter/services/service_locator.dart';
 import 'package:smarter/shared/mini_player.dart';
 
 void main() async {
@@ -27,6 +28,7 @@ void main() async {
   await Hive.openBox('subscriptionsBox');
   await Hive.openBox('generalBox');
   await Hive.openBox('historyBox');
+  await setupServiceLocator();
 
   runApp(
     EasyLocalization(
@@ -61,7 +63,7 @@ class MyApp extends StatelessWidget {
               create: (_) => PodcastProvider(),
             ),
             ChangeNotifierProvider(
-              create: (_) => AudioProvider(0),
+              create: (_) => AudioProvider(),
             ),
           ],
           child: Consumer<SettingsProvider>(
@@ -78,6 +80,9 @@ class MyApp extends StatelessWidget {
                 home: HomeScreen(),
                 builder: (context, child) {
                   //to show the mini player over the whole app
+                  var audioProvider =
+                      Provider.of<AudioProvider>(context, listen: false);
+                  audioProvider.init();
                   return Stack(
                     alignment: AlignmentDirectional.bottomCenter,
                     children: [

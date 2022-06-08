@@ -10,8 +10,10 @@ import 'package:provider/provider.dart';
 import 'package:smarter/shared/shimmer_widget.dart';
 
 import '../../providers/podcast_provider.dart';
-import '../../shared/detailed_episode_loading_widget.dart';
-import '../../shared/detailed_episode_widget.dart';
+import '../../services/playlist_repository.dart';
+import '../../services/service_locator.dart';
+import '../../shared/episode_list_item.dart';
+import '../../shared/episode_list_item_loading.dart';
 
 class PodcastScreen extends StatefulWidget {
   final Item podcastInfo;
@@ -28,8 +30,8 @@ class _PodcastScreenState extends State<PodcastScreen> {
   void initState() {
     //load episodes on screen open
     var podcastProvider = Provider.of<PodcastProvider>(context, listen: false);
-    podcastProvider.podcastInfo = widget.podcastInfo;
-    podcastProvider.loadPodcastEpisodes(widget.podcastInfo.feedUrl!);
+    podcastProvider.loadPodcastEpisodes(widget.podcastInfo.feedUrl!, context);
+    podcastProvider.loadSubscriptionState(widget.podcastInfo);
   }
 
   @override
@@ -69,12 +71,8 @@ class _PodcastScreenState extends State<PodcastScreen> {
       },
       itemCount: podcastProvider.filteredEpisodes.length,
       itemBuilder: (context, index) {
-        Episode _episode = podcastProvider.filteredEpisodes[index];
-        return DetailedEpsiodeViewWidget(
-          episode: _episode,
-          podcastInfo: podcastProvider.podcastInfo!,
-          index: index,
-        );
+        return EpisodeListItem(podcastProvider.filteredEpisodes,
+            podcastProvider.filteredEpisodes[index], index);
       },
     ));
   }
@@ -421,7 +419,7 @@ class _PodcastScreenState extends State<PodcastScreen> {
             children: [
               Consumer(
                 builder: (context, PodcastProvider podcastProvider, child) {
-                  bool _isSubbed = podcastProvider.isSubscribed;
+                  bool _isSubbed = podcastProvider.isSubscribedToPodcast;
                   bool _isLoading = podcastProvider.isLoading;
                   return _isLoading
                       ? SizedBox(
@@ -541,6 +539,7 @@ class _PodcastScreenState extends State<PodcastScreen> {
   }
 
   Container buildAboutWidget(BuildContext context) {
+    final playlistRepository = getIt<PlaylistRepository>();
     return Container(
       padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
@@ -560,7 +559,7 @@ class _PodcastScreenState extends State<PodcastScreen> {
         collapsed: Container(),
         expanded: Consumer(
           builder: (context, PodcastProvider podcastProvider, child) {
-            String? _description = podcastProvider.description;
+            String? _description = podcastProvider.podcast?.description;
             bool _isLoading = podcastProvider.isLoading;
             return _isLoading
                 ? SizedBox(
