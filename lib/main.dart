@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
@@ -11,10 +12,14 @@ import 'package:smarter/providers/audio_provider.dart';
 import 'package:smarter/providers/home_provider.dart';
 import 'package:smarter/providers/podcast_provider.dart';
 import 'package:smarter/providers/settings_provider.dart';
+import 'package:smarter/providers/sign_in_provider.dart';
 import 'package:smarter/screens/home/home.dart';
+import 'package:smarter/screens/sign_in/sign_in.dart';
 import 'package:smarter/services/database/subscriptions.dart';
 import 'package:smarter/services/service_locator.dart';
 import 'package:smarter/shared/mini_player.dart';
+
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +34,10 @@ void main() async {
   await Hive.openBox('generalBox');
   await Hive.openBox('historyBox');
   await setupServiceLocator();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(
     EasyLocalization(
@@ -65,19 +74,24 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(
               create: (_) => AudioProvider(),
             ),
+            ChangeNotifierProvider(
+              create: (_) => SignInProvider(),
+            ),
           ],
           child: Consumer<SettingsProvider>(
-            builder: (context, provider, child) {
+            builder: (context, settingsProvider, child) {
               return MaterialApp(
                 debugShowCheckedModeBanner: false,
                 title: 'Flutter Demo',
-                theme: provider.isDarkMode
+                theme: settingsProvider.isDarkMode
                     ? MyTheme.darkTheme
                     : MyTheme.lightTheme,
                 localizationsDelegates: context.localizationDelegates,
                 supportedLocales: context.supportedLocales,
                 locale: context.locale,
-                home: HomeScreen(),
+                home: settingsProvider.isAlreadyLoggedIn(context)
+                    ? HomeScreen()
+                    : SignInScreen(),
                 builder: (context, child) {
                   //to show the mini player over the whole app
                   var audioProvider =

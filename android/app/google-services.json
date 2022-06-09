@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "434673135842",
+    "project_id": "smarter-351614",
+    "storage_bucket": "smarter-351614.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:434673135842:android:c56750bd1ea0970b446ebb",
+        "android_client_info": {
+          "package_name": "com.example.smarter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "434673135842-dtuoot6hg9td64i10a6h2nabv5u3kgh8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smarter",
+            "certificate_hash": "91aa955361e62d9734f647875734de64d130426b"
+          }
+        },
+        {
+          "client_id": "434673135842-3mi55ke11n63muqv2jjd24e8mq3m9viq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA1zILuBumH88AFcEN3JsguxxlE_-Tno9U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "434673135842-3mi55ke11n63muqv2jjd24e8mq3m9viq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "434673135842-bsh3vn9kannoil3ngkk670pnt5s2u8ns.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.smarter"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
