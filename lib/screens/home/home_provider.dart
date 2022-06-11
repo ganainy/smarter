@@ -1,6 +1,13 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:podcast_search/podcast_search.dart';
-import 'package:smarter/providers/settings_provider.dart';
+
+import '../../models/languages.dart';
+import '../sign_in/sign_in.dart';
 
 class HomeProvider with ChangeNotifier {
   List<Item> topPodcasts = [];
@@ -50,5 +57,25 @@ class HomeProvider with ChangeNotifier {
         break;
     }
     getTopPodcasts();
+  }
+
+  Future<void> signOut({required BuildContext context}) async {
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+
+    try {
+      if (!kIsWeb) {
+        await googleSignIn.signOut();
+      }
+      await FirebaseAuth.instance.signOut();
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => SignInScreen(),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error signing out. Try again.'.tr())));
+    }
   }
 }

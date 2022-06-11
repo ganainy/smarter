@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-enum Languages { en, de }
+import '../models/languages.dart';
 
 class SettingsProvider with ChangeNotifier {
   bool isDarkMode = false;

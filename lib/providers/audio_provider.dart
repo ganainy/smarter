@@ -2,7 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:podcast_search/podcast_search.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/providers/podcast_provider.dart';
+import 'package:smarter/screens/podcast/podcast_provider.dart';
 
 import '../services/audio_handler.dart';
 import '../services/service_locator.dart';
@@ -43,8 +43,8 @@ class AudioProvider with ChangeNotifier {
   Future<void> loadPlaylist(List<Episode> playlist) async {
     final mediaItems = playlist
         .map((song) => MediaItem(
-              id: song.guid ?? '',
-              title: song.title ?? '',
+              id: song.guid,
+              title: song.title,
               artUri: Uri.parse(song.imageUrl ?? ''),
               extras: {'url': song.contentUrl},
             ))

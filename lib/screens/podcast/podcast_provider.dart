@@ -1,12 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:podcast_search/podcast_search.dart';
 
-import '../services/database/db_service.dart';
-import '../services/playlist_repository.dart';
-import '../services/service_locator.dart';
+import '../../services/database/db_service.dart';
+import '../../services/playlist_repository.dart';
+import '../../services/service_locator.dart';
 
-//todo sort,lang, add firebase
 enum EpisodeSort { newToOld, oldToNew }
 
 class PodcastProvider with ChangeNotifier {
@@ -87,16 +87,25 @@ class PodcastProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleEpisodesSort() async {
+  void toggleEpisodesSort(BuildContext context) async {
     try {
       isLoading = true;
       notifyListeners();
 
       filteredEpisodes
           .sort((a, b) => a.publicationDate!.compareTo(b.publicationDate!));
+      if (episodesSort == EpisodeSort.oldToNew) {
+        filteredEpisodes = filteredEpisodes.reversed.toList();
+        episodesSort = EpisodeSort.newToOld;
 
-      //epSortingIncr: !state.epSortingIncr,
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Episodes sorted from new to old.'.tr())));
+      } else {
+        episodesSort = EpisodeSort.oldToNew;
 
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Episodes sorted from old to new.'.tr())));
+      }
     } catch (e) {
       debugPrint(" cannot sort episodes  : $e");
     } finally {

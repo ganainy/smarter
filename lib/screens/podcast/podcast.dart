@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:expandable/expandable.dart';
 import 'package:feather_icons/feather_icons.dart';
@@ -9,22 +11,26 @@ import 'package:podcast_search/podcast_search.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter/shared/shimmer_widget.dart';
 
-import '../../providers/podcast_provider.dart';
 import '../../services/playlist_repository.dart';
 import '../../services/service_locator.dart';
 import '../../shared/episode_list_item.dart';
 import '../../shared/episode_list_item_loading.dart';
+import 'podcast_provider.dart';
 
 class PodcastScreen extends StatefulWidget {
   final Item podcastInfo;
+
   PodcastScreen({Key? key, required this.podcastInfo}) : super(key: key);
 
   @override
   State<PodcastScreen> createState() => _PodcastScreenState();
 }
 
-class _PodcastScreenState extends State<PodcastScreen> {
+class _PodcastScreenState extends State<PodcastScreen>
+    with TickerProviderStateMixin {
   final TextEditingController episodeSearchController = TextEditingController();
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(seconds: 1));
 
   @override
   void initState() {
@@ -62,8 +68,8 @@ class _PodcastScreenState extends State<PodcastScreen> {
         child: ListView.separated(
       physics: const BouncingScrollPhysics(),
       separatorBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.0),
           child: Divider(
             color: Colors.grey,
           ),
@@ -140,11 +146,23 @@ class _PodcastScreenState extends State<PodcastScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 2.0),
                         child: IconButton(
                           onPressed: () {
-                            showSortingModalSheet(context, podcastProvider);
+                            podcastProvider.toggleEpisodesSort(context);
+                            //start animation
+                            _controller.forward(from: 0);
                           },
-                          icon: Icon(
-                            Icons.more_vert,
-                            color: Theme.of(context).colorScheme.secondary,
+                          icon: AnimatedBuilder(
+                            animation: _controller,
+                            builder: (_, child) {
+                              return Transform.rotate(
+                                angle: _controller.value * math.pi,
+                                child: child,
+                              );
+                            },
+                            child: Image.asset(
+                              'assets/images/sort.png',
+                              width: 26,
+                              height: 26,
+                            ),
                           ),
                         )),
                   ],
@@ -154,93 +172,6 @@ class _PodcastScreenState extends State<PodcastScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  void showSortingModalSheet(
-      BuildContext context, PodcastProvider podcastProvider) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.2,
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              InkWell(
-                onTap: () {
-                  /*    ref
-                            .read(
-                                podcastPageViewController(
-                              podcast,
-                            ).notifier)
-                            .toggleEpisodesSort();*/
-                  Navigator.pop(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      podcastProvider.episodesSort == EpisodeSort.newToOld
-                          ? Icons.check_box
-                          : Icons.check_box_outline_blank,
-                    ),
-                    Text(
-                      podcastProvider.episodesSort == EpisodeSort.newToOld
-                          ? " Sort Episodes Newest to Oldest"
-                          : " Sort Episodes Oldest to Newest",
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondary
-                            .withOpacity(0.70),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_downward),
-                  ],
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  /* ref
-                            .read(
-                                podcastPageViewController(
-                              podcast,
-                            ).notifier)
-                            .toggleEpisodesSort();*/
-                  Navigator.pop(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Icon(
-                      podcastProvider.episodesSort == EpisodeSort.newToOld
-                          ? Icons.check_box_outline_blank
-                          : Icons.check_box,
-                    ),
-                    Text(
-                      " Sort Episodes Oldest to Newest",
-                      style: TextStyle(
-                        fontSize: 17.0,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .secondary
-                            .withOpacity(0.70),
-                        fontFamily: 'Segoe',
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const Icon(Icons.arrow_upward),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

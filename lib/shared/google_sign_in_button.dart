@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/providers/sign_in_provider.dart';
 import 'package:smarter/screens/home/home.dart';
+import 'package:smarter/screens/sign_in/sign_in_provider.dart';
 
 class GoogleSignInButton extends StatefulWidget {
   @override

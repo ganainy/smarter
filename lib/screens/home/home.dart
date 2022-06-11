@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:podcast_search/src/model/item.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/providers/home_provider.dart';
+import 'package:smarter/screens/home/home_provider.dart';
 
-import '../../nav_bar.dart';
+import '../../models/languages.dart';
 import '../../providers/settings_provider.dart';
 import '../../shared/podcast_display_widget.dart';
 import '../podcast/podcast.dart';
@@ -27,11 +27,8 @@ class HomeScreen extends StatelessWidget {
         break;
     }
 
-    return Scaffold(
-      drawer: NavBar(),
-      body: SafeArea(
-        child: TopPodcasts(context: context),
-      ),
+    return SafeArea(
+      child: TopPodcasts(context: context),
     );
   }
 }
@@ -54,39 +51,6 @@ class TopPodcasts extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Discover".tr(),
-                    style: const TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    "Top podcasts today".tr(),
-                    style: const TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.w200,
-                    ),
-                  ),
-                ],
-              ),
-              IconButton(
-                onPressed: () {
-                  Scaffold.of(context).openDrawer();
-                },
-                icon: const Icon(Icons.settings),
-              )
-            ],
-          ),
-          const SizedBox(
-            height: 16.0,
-          ),
           Consumer(builder: (context, HomeProvider homeProvider, child) {
             var _isLoading = homeProvider.isLoading;
             var _topPodcasts = homeProvider.topPodcasts;

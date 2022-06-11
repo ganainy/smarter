@@ -76,7 +76,7 @@ class _EpisodeListItemState extends State<EpisodeListItem> {
             children: [
               Expanded(
                 child: Text(
-                  widget.selectedEpisode.title ?? '',
+                  widget.selectedEpisode.title,
                   style: const TextStyle(
                     fontSize: 18.0,
                     fontWeight: FontWeight.w400,

@@ -69,7 +69,6 @@ class SignInProvider with ChangeNotifier {
 
     try {
       return await FirebaseAuth.instance.signInAnonymously();
-      print("Signed in with temporary account.");
     } on FirebaseAuthException catch (e) {
       switch (e.code) {
         case "operation-not-allowed":
@@ -85,20 +84,6 @@ class SignInProvider with ChangeNotifier {
     } finally {
       isSigningIn = false;
       notifyListeners();
-    }
-  }
-
-  Future<void> signOut({required BuildContext context}) async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-
-    try {
-      if (!kIsWeb) {
-        await googleSignIn.signOut();
-      }
-      await FirebaseAuth.instance.signOut();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error signing out. Try again.'.tr())));
     }
   }
 }

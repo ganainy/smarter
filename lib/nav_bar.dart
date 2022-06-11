@@ -1,8 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/providers/home_provider.dart';
 import 'package:smarter/providers/settings_provider.dart';
+import 'package:smarter/screens/home/home_provider.dart';
+
+import 'models/languages.dart';
 
 class NavBar extends StatelessWidget {
   @override
@@ -65,6 +67,23 @@ class NavBar extends StatelessWidget {
               ],
             ),
           ),
+          Row(
+            children: [
+              TextButton.icon(
+                icon: const Icon(
+                  Icons.output,
+                  color: Colors.black,
+                ), // Your icon here
+                label: Text(
+                  'Sign out'.tr(),
+                  style: const TextStyle(color: Colors.black),
+                ), // Your text here
+                onPressed: () {
+                  homeProvider.signOut(context: context);
+                },
+              ),
+            ],
+          )
         ],
       ),
     );
