@@ -1,3 +1,4 @@
+/*
 import 'package:hive/hive.dart';
 import 'package:podcast_search/podcast_search.dart';
 import 'package:smarter/services/database/subscriptions.dart';
@@ -73,6 +74,7 @@ Future<bool> removePodcastFromSubs(Item podcast) async {
   }
 }
 
+*/
 /*Future<List<ListeningHistoryItem>> getLhiList() async {
   List<ListeningHistoryItem> _lhis = [];
   List _l = _historyBox.values.toList();
@@ -100,4 +102,8 @@ Future<bool> removeLhiItem(int key) async {
     print("error removing item: $e");
     return false;
   }
-}*/
+}*/ /*
+*/
+/*
+
+*/

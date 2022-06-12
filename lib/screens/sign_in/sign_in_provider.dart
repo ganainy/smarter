@@ -43,12 +43,12 @@ class SignInProvider with ChangeNotifier {
           SnackBar(content: Text('Welcome ${user?.displayName}.'.tr())));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Account exists with different credential.'.tr())));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Invalid credentials.'.tr())));
         // handle the error here
       } else if (e.code == 'invalid-credential') {
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Invalid credential.'.tr())));
+            .showSnackBar(SnackBar(content: Text('Invalid credentials.'.tr())));
         // handle the error here
       }
     } catch (e) {

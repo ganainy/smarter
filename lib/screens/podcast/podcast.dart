@@ -431,7 +431,8 @@ class _PodcastScreenState extends State<PodcastScreen>
       onTap: () {
         _isSubbed
             ? podcastProvider.removeFromSubscriptionsAction(widget.podcastInfo)
-            : podcastProvider.saveToSubscriptionsAction(widget.podcastInfo);
+            : podcastProvider.saveToSubscriptionsAction(
+                widget.podcastInfo, context);
       },
       child: AnimatedContainer(
         constraints: BoxConstraints(

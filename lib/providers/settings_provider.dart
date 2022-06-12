@@ -6,6 +6,7 @@ import '../models/languages.dart';
 
 class SettingsProvider with ChangeNotifier {
   bool isDarkMode = false;
+  bool isAlreadyLoggedIn = false;
   Languages? language;
 
   void toggleDarkMode() {
@@ -18,11 +19,19 @@ class SettingsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isAlreadyLoggedIn(BuildContext context) {
-    User? user = FirebaseAuth.instance.currentUser;
-    if (user != null) {
-      return true;
+  //this method will return false if logged in as anonymous or logged out
+  //will return true only if logged in by google account
+  bool getIsAlreadyLoggedIn(BuildContext context) {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+
+    if (_auth.currentUser?.displayName != null) {
+      isAlreadyLoggedIn = true;
+      notifyListeners();
+      return isAlreadyLoggedIn;
+    } else {
+      isAlreadyLoggedIn = false;
+      notifyListeners();
+      return isAlreadyLoggedIn;
     }
-    return false;
   }
 }

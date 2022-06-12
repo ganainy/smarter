@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smarter/providers/settings_provider.dart';
-import 'package:smarter/screens/home/home_provider.dart';
 
+import 'layouts/home/home_provider.dart';
 import 'models/languages.dart';
 
 class NavBar extends StatelessWidget {
@@ -67,25 +67,42 @@ class NavBar extends StatelessWidget {
               ],
             ),
           ),
-          Row(
-            children: [
-              TextButton.icon(
-                icon: const Icon(
-                  Icons.output,
-                  color: Colors.black,
-                ), // Your icon here
-                label: Text(
-                  'Sign out'.tr(),
-                  style: const TextStyle(color: Colors.black),
-                ), // Your text here
-                onPressed: () {
-                  homeProvider.signOut(context: context);
-                },
-              ),
-            ],
-          )
+          const LogoutButton()
         ],
       ),
+    );
+  }
+}
+
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    Provider.of<SettingsProvider>(context, listen: false)
+        .getIsAlreadyLoggedIn(context);
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, child) {
+        return settingsProvider.isAlreadyLoggedIn
+            ? Row(
+                children: [
+                  TextButton.icon(
+                    icon: const Icon(
+                      Icons.output,
+                      color: Colors.black,
+                    ), // Your icon here
+                    label: Text(
+                      'Sign out'.tr(),
+                      style: const TextStyle(color: Colors.black),
+                    ), // Your text here
+                    onPressed: () {
+                      Provider.of<HomeProvider>(context, listen: false)
+                          .signOut(context: context);
+                    },
+                  ),
+                ],
+              )
+            : Container();
+      },
     );
   }
 }

@@ -7,7 +7,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:podcast_search/podcast_search.dart';
 
 import '../../models/languages.dart';
-import '../sign_in/sign_in.dart';
+import '../../navigation/app_routes.dart';
 
 class HomeProvider with ChangeNotifier {
   List<Item> topPodcasts = [];
@@ -68,11 +68,8 @@ class HomeProvider with ChangeNotifier {
       }
       await FirebaseAuth.instance.signOut();
 
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => SignInScreen(),
-        ),
-      );
+      Navigator.pushNamedAndRemoveUntil(
+          context, AppRoutes.sign_in, ModalRoute.withName('/'));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error signing out. Try again.'.tr())));

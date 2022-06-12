@@ -2,10 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:podcast_search/podcast_search.dart';
+import 'package:provider/provider.dart';
 
-import '../../services/database/db_service.dart';
+import '../../providers/settings_provider.dart';
 import '../../services/playlist_repository.dart';
 import '../../services/service_locator.dart';
+import '../sign_in/sign_in_provider.dart';
 
 enum EpisodeSort { newToOld, oldToNew }
 
@@ -49,21 +51,33 @@ class PodcastProvider with ChangeNotifier {
   }
 
   removeFromSubscriptionsAction(Item podcast) async {
-    bool _removed = await removePodcastFromSubs(podcast);
+    /* bool _removed = await removePodcastFromSubs(podcast);
     if (_removed) {
       print(" podcast ${podcast.collectionName}  is removed from subs");
       isSubscribedToPodcast = false;
     } else {
       isSubscribedToPodcast = true;
     }
-    notifyListeners();
+    notifyListeners();*/
   }
 
-  saveToSubscriptionsAction(Item podcast) async {
-    isLoading = true;
+  saveToSubscriptionsAction(Item podcast, BuildContext context) async {
+    /*   isLoading = true;
     notifyListeners();
-    bool _saved = await savePodcastToSubs(podcast);
-    if (_saved) {
+    bool _saved = await savePodcastToSubs(podcast);*/
+
+    var settingsProvider =
+        Provider.of<SettingsProvider>(context, listen: false);
+    var isAlreadyLoggedIn = settingsProvider.getIsAlreadyLoggedIn(context);
+    if (!isAlreadyLoggedIn) {
+      var signInProvider = Provider.of<SignInProvider>(context, listen: false);
+      signInProvider.signInWithGoogle(context: context);
+      print(" must login first");
+    } else {
+      print("already logged in, added to subs");
+    }
+
+    /* if (_saved) {
       print(" podcast ${podcast.collectionName}  is saved to subs");
       isLoading = false;
       isSubscribedToPodcast = true;
@@ -72,7 +86,7 @@ class PodcastProvider with ChangeNotifier {
       isLoading = false;
       isSubscribedToPodcast = false;
       notifyListeners();
-    }
+    }*/
   }
 
   void filterEpisodesWithQuery(String query) {
@@ -115,7 +129,7 @@ class PodcastProvider with ChangeNotifier {
   }
 
   loadSubscriptionState(Item podcastInfo) async {
-    isSubscribedToPodcast = await isPodcastSubbed(podcastInfo);
-    notifyListeners();
+    /*  isSubscribedToPodcast = await isPodcastSubbed(podcastInfo);
+    notifyListeners();*/
   }
 }

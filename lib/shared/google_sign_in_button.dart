@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/screens/home/home.dart';
+import 'package:smarter/navigation/app_routes.dart';
 import 'package:smarter/screens/sign_in/sign_in_provider.dart';
 
 class GoogleSignInButton extends StatefulWidget {
@@ -33,11 +33,8 @@ class _GoogleSignInButtonState extends State<GoogleSignInButton> {
                         await signInProvider.signInWithGoogle(context: context);
 
                     if (user != null) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ),
-                      );
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, AppRoutes.home, ModalRoute.withName('/'));
                     }
                   },
                   child: Padding(

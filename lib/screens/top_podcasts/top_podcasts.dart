@@ -1,45 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:podcast_search/src/model/item.dart';
+import 'package:podcast_search/podcast_search.dart';
 import 'package:provider/provider.dart';
-import 'package:smarter/screens/home/home_provider.dart';
 
-import '../../models/languages.dart';
-import '../../providers/settings_provider.dart';
+import '../../layouts/home/home_provider.dart';
 import '../../shared/podcast_display_widget.dart';
 import '../podcast/podcast.dart';
 
-class HomeScreen extends StatelessWidget {
-  HomeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    var settingsProvider = Provider.of<SettingsProvider>(context);
-
-    switch (settingsProvider.language) {
-      case Languages.en:
-        context.setLocale(const Locale('en', 'US'));
-        break;
-      case Languages.de:
-        context.setLocale(const Locale('de', 'DE'));
-        break;
-      default:
-        break;
-    }
-
-    return SafeArea(
-      child: TopPodcasts(context: context),
-    );
-  }
-}
-
-class TopPodcasts extends StatelessWidget {
-  const TopPodcasts({
+class TopPodcastsScreen extends StatelessWidget {
+  const TopPodcastsScreen({
     Key? key,
-    required this.context,
   }) : super(key: key);
-
-  final BuildContext context;
 
   @override
   Widget build(BuildContext context) {
@@ -99,6 +70,7 @@ class TopPodcasts extends StatelessWidget {
                 top: 4.0, bottom: 4.0, left: 2.0, right: 2.0),
             child: InkWell(
               onTap: () {
+                /*   Navigator.pushNamed(context, AppRoutes.podcast,);*/
                 Navigator.of(context).push(
                   PageRouteBuilder(
                     transitionDuration: const Duration(milliseconds: 500),
